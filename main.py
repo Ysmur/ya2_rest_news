@@ -1,6 +1,6 @@
-from flask import Flask, redirect, render_template, session
+from flask import Flask, redirect, render_template, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
+from flask import make_response
 from data import db_session
 from data import news_api
 from data.news import News
@@ -12,6 +12,9 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 @login_manager.user_loader
 def load_user(user_id):
