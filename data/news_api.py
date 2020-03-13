@@ -1,5 +1,4 @@
-from flask import Flask, jsonify, Blueprint
-
+from flask import Flask, jsonify, Blueprint, request
 
 from data import db_session
 from data.news import News
@@ -32,6 +31,32 @@ def get_one_news(news_id):
         }
     )
 
+@blueprint.route('/api/news', methods=['POST'])
+def create_news():
+    if not request.json:
+        return jsonify({'error': 'Empty request'})
+    elif not all(key in request.json for key in
+                 ['title', 'content', 'user_id', 'is_private', 'is_published']):
+        return jsonify({'error': 'Bad request'})
+    session = db_session.create_session()
+    news = News(
+        title=request.json['title'],
+        content=request.json['content'],
+        user_id=request.json['user_id'],
+        is_private=request.json['is_private'],
+        is_published=request.json['is_published']
+    )
+    session.add(news)
+    session.commit()
+    return jsonify({'success': 'OK'})
 
 
-
+@blueprint.route('/api/news/<int:news_id>', methods=['DELETE'])
+def delete_news(news_id):
+    session = db_session.create_session()
+    news = session.query(News).get(news_id)
+    if not news:
+        return jsonify({'error': 'Not found'})
+    session.delete(news)
+    session.commit()
+    return jsonify({'success': 'OK'})

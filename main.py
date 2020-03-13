@@ -1,20 +1,20 @@
 from flask import Flask, redirect, render_template, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask import make_response
+
+import news_resources
 from data import db_session
 from data import news_api
 from data.news import News
 from data.users import User
 from loginform import LoginForm, RegisterForm
+from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
+api = Api(app)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,18 +89,23 @@ def main():
     # session.add(user)
     # session.commit()
     # добавление первой новости первого пользователя в бд
-    # news = News(title="Первая новость", content="Привет блог!",
-    #             user_id=1, is_private=False)
+    # news = News(title="Первая новость Testa", content="Привет блог!",
+    #             user_id=2, is_private=False)
     # session = db_session.create_session()
     # session.add(news)
     # session.commit()
-
+    #
     # session = db_session.create_session()
-    # user = session.query(User).filter(User.id == 1).first()
+    # user = session.query(User).filter(User.id == 2).first()
     # news = News(title="Личная запись", content="Эта запись личная",
     #             is_private=True)
     # user.news.append(news)
     # session.commit()
+    # для списка объектов
+    api.add_resource(news_resources.NewsListResource, '/api/v2/news')
+
+    # для одного объекта
+    api.add_resource(news_resources.NewsResource, '/api/v2/news/<int:news_id>')
     app.run()
 
 
